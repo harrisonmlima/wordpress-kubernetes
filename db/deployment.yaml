@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: mysql
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: mysql
@@ -16,12 +17,14 @@ spec:
         image: mysql:5.7
         ports:
         - containerPort: 3306
-        env:
-          - name: MYSQL_DATABASE
-            value: wordpressdb
-          - name: MYSQL_USER
-            value: wordpressuser
-          - name: MYSQL_PASSWORD
-            value: wordpresspwd
-          - name: MYSQL_RANDOM_ROOT_PASSWORD
-            value: "1"
+        volumeMounts:
+          - mountPath: /var/lib/mysql
+            name: mysql-data
+        envFrom:
+          - secretRef:
+              name: mysql-secret
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+          
